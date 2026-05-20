@@ -1,6 +1,46 @@
 const express = require('express');
+const { exec } = require('child_process');
 
 const app = express();
+
+app.get('/metrics', (req, res) => {
+
+exec('kubectl top nodes --no-headers', (err, stdout) => {
+
+let cpu = "0";
+let memory = "0";
+
+if (!err && stdout) {
+
+const data = stdout.trim().split(/\s+/);
+
+cpu = data[2] || "0";
+memory = data[4] || "0";
+
+}
+
+exec('kubectl get pods --no-headers | find /c /v ""', (err2, stdout2) => {
+
+let pods = stdout2 ? stdout2.trim() : "0";
+
+exec('docker ps -q | find /c /v ""', (err3, stdout3) => {
+
+let containers = stdout3 ? stdout3.trim() : "0";
+
+res.json({
+cpu,
+memory,
+pods,
+containers
+});
+
+});
+
+});
+
+});
+
+});
 
 app.get('/', (req, res) => {
 
@@ -12,22 +52,36 @@ res.send(`
 
 <head>
 
-<title>DevOps CI/CD Monitoring Platform</title>
+<title>DevOps Monitoring Platform</title>
 
 <style>
 
-body{
-font-family: Arial;
-background:#0f172a;
-color:white;
+*{
 margin:0;
 padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body{
+background:#0f172a;
+color:white;
 }
 
 .header{
 background:#111827;
-padding:20px;
+padding:25px;
 text-align:center;
+}
+
+.header h1{
+font-size:40px;
+color:#38bdf8;
+}
+
+.header p{
+margin-top:10px;
+color:#cbd5e1;
 }
 
 .container{
@@ -36,37 +90,47 @@ padding:30px;
 
 .cards{
 display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:20px;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
 margin-top:30px;
 }
 
 .card{
 background:#1e293b;
-padding:25px;
-border-radius:15px;
+padding:30px;
+border-radius:18px;
 text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.4);
 }
 
 .card h2{
-font-size:40px;
-margin:10px 0;
+font-size:48px;
+margin:15px 0;
 color:#38bdf8;
+}
+
+.card p{
+color:#cbd5e1;
 }
 
 .pipeline{
 margin-top:40px;
 background:#1e293b;
-padding:25px;
-border-radius:15px;
+padding:30px;
+border-radius:18px;
 }
 
-.pipeline-step{
+.pipeline h2{
+margin-bottom:20px;
+color:#38bdf8;
+}
+
+.step{
 display:flex;
 justify-content:space-between;
+background:#0f172a;
 padding:15px;
 margin:10px 0;
-background:#0f172a;
 border-radius:10px;
 }
 
@@ -75,19 +139,16 @@ color:#22c55e;
 font-weight:bold;
 }
 
-.workflow{
-margin-top:40px;
-background:#1e293b;
-padding:25px;
-border-radius:15px;
-text-align:center;
+.live{
+color:#22c55e;
+font-weight:bold;
+animation:blink 1s infinite;
 }
 
-.tools{
-display:flex;
-justify-content:space-around;
-margin-top:20px;
-font-weight:bold;
+@keyframes blink{
+50%{
+opacity:0.5;
+}
 }
 
 </style>
@@ -102,6 +163,10 @@ font-weight:bold;
 
 <p>Docker • Kubernetes • Jenkins • Prometheus • Grafana</p>
 
+<br>
+
+<p class="live">● LIVE REAL-TIME MONITORING</p>
+
 </div>
 
 <div class="container">
@@ -110,26 +175,26 @@ font-weight:bold;
 
 <div class="card">
 <h3>Running Pods</h3>
-<h2 id="pods">4</h2>
-<p>Healthy</p>
+<h2 id="pods">0</h2>
+<p>Kubernetes Pods</p>
 </div>
 
 <div class="card">
 <h3>CPU Usage</h3>
-<h2 id="cpu">42%</h2>
-<p>Normal</p>
+<h2 id="cpu">0%</h2>
+<p>Cluster CPU</p>
 </div>
 
 <div class="card">
 <h3>Memory Usage</h3>
-<h2 id="memory">68%</h2>
-<p>Stable</p>
+<h2 id="memory">0%</h2>
+<p>Cluster Memory</p>
 </div>
 
 <div class="card">
 <h3>Containers</h3>
-<h2 id="containers">6</h2>
-<p>Running</p>
+<h2 id="containers">0</h2>
+<p>Docker Containers</p>
 </div>
 
 </div>
@@ -138,51 +203,34 @@ font-weight:bold;
 
 <h2>CI/CD Pipeline Status</h2>
 
-<div class="pipeline-step">
-<span>GitHub Push</span>
+<div class="step">
+<span>GitHub Integration</span>
 <span class="success">SUCCESS</span>
 </div>
 
-<div class="pipeline-step">
+<div class="step">
 <span>Jenkins Build</span>
 <span class="success">SUCCESS</span>
 </div>
 
-<div class="pipeline-step">
+<div class="step">
 <span>Docker Build</span>
 <span class="success">SUCCESS</span>
 </div>
 
-<div class="pipeline-step">
+<div class="step">
 <span>Kubernetes Deployment</span>
 <span class="success">SUCCESS</span>
 </div>
 
-<div class="pipeline-step">
-<span>Monitoring Active</span>
-<span class="success">SUCCESS</span>
+<div class="step">
+<span>Prometheus Monitoring</span>
+<span class="success">ACTIVE</span>
 </div>
 
-</div>
-
-<div class="workflow">
-
-<h2>DevOps Workflow</h2>
-
-<div class="tools">
-
-<span>GitHub</span>
-<span>→</span>
-<span>Jenkins</span>
-<span>→</span>
-<span>Docker</span>
-<span>→</span>
-<span>Kubernetes</span>
-<span>→</span>
-<span>Prometheus</span>
-<span>→</span>
-<span>Grafana</span>
-
+<div class="step">
+<span>Grafana Dashboard</span>
+<span class="success">RUNNING</span>
 </div>
 
 </div>
@@ -191,21 +239,22 @@ font-weight:bold;
 
 <script>
 
-setInterval(() => {
+async function loadMetrics(){
 
-document.getElementById("cpu").innerText =
-Math.floor(Math.random() * 40 + 40) + "%";
+const response = await fetch('/metrics');
 
-document.getElementById("memory").innerText =
-Math.floor(Math.random() * 30 + 50) + "%";
+const data = await response.json();
 
-document.getElementById("pods").innerText =
-Math.floor(Math.random() * 3 + 4);
+document.getElementById('cpu').innerText = data.cpu;
+document.getElementById('memory').innerText = data.memory;
+document.getElementById('pods').innerText = data.pods;
+document.getElementById('containers').innerText = data.containers;
 
-document.getElementById("containers").innerText =
-Math.floor(Math.random() * 4 + 5);
+}
 
-}, 3000);
+loadMetrics();
+
+setInterval(loadMetrics,3000);
 
 </script>
 
@@ -218,5 +267,7 @@ Math.floor(Math.random() * 4 + 5);
 });
 
 app.listen(3000, () => {
+
 console.log('Server running on port 3000');
+
 });
