@@ -87,14 +87,43 @@ Kubernetes Deployment
 
 ## 📂 Project Structure
 
-```text
+
 devops-platform/
 │
 ├── app.js
 ├── Dockerfile
 ├── Jenkinsfile
 ├── package.json
+├── package-lock.json
 ├── README.md
+├── .gitignore
+│
+├── controllers/
+│   ├── aiController.js
+│   ├── chatController.js
+│   └── metricsController.js
+│
+├── routes/
+│   ├── ai.js
+│   ├── chat.js
+│   └── metrics.js
+│
+├── services/
+│   ├── aiService.js
+│   ├── chatService.js
+│   └── metricsService.js
+│
+├── public/
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+│
+├── ai-service/
+│   ├── app.py
+│   ├── gemini.py
+│   ├── prompt.py
+│   ├── requirements.txt
+│   └── Dockerfile
 │
 ├── k8s/
 │   ├── deployment.yaml
