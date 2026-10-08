@@ -1,4 +1,4 @@
-# 🚀 DevOps CI/CD Monitoring Platform
+# 🚀 AI Powered Devops Monitoring Platform
 
 A complete DevOps automation project designed to demonstrate modern software deployment, CI/CD workflows, container orchestration, infrastructure automation, and real-time monitoring using industry-standard tools.
 
